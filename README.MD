@@ -10,6 +10,14 @@ running the service with `nginx` rate-limiting and a
 `varnish` caching proxy. Note that probably having
 just `varnish` is enough.
 
+## Endpoint /screenshotPage
+
+Accepts all of the same arguments as `/screenshot` but
+instead of returning a raw image, returns an HTML page
+that will load the image with 100% width. This is useful
+when you want a viewport smaller than a display, but want
+to stretch the image to fit the display.
+
 ## Endpoint /screenshot
 
 ### Parameters
