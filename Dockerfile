@@ -24,7 +24,8 @@ WORKDIR /home/pwuser
 ENV NODE_ENV=production
 ENV PORT=3000
 
-COPY package*.json public ./
+COPY package*.json ./
+COPY public public
 COPY --from=builder --chown=pwuser /build/dist dist
 # this relies on us
 COPY --from=builder --chown=pwuser /build/node_modules node_modules
