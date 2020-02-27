@@ -34,6 +34,9 @@ app.get('/screenshotPage', (req: Request, res: Response) => {
 </head>
 <body>
 <img src="screenshot?${queryString.stringify(req.query)}">
+<div id="loadingContainer">
+    <div id="loading">Loading</div>
+</div>
 </body>
 </html>
     `)
