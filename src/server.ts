@@ -2,6 +2,7 @@ import express, {Request, Response} from "express";
 import playwright from "playwright";
 import tempy from "tempy";
 import bluebird from "bluebird";
+import {format as dateFormat} from "date-fns";
 
 const app = express();
 
@@ -77,9 +78,18 @@ app.get("/screenshot", async (req: Request, res: Response) => {
         }
 
         const screenshotPath = `${tempy.file()}.png`;
-        console.log(`Saving to ${screenshotPath}`);
+        console.log(`Saving ${url} to ${screenshotPath}`);
         await page.screenshot({ path: screenshotPath });
         await browser.close();
+        res.setHeader('ETag', getETag(url));
+        // Varnish (and other caches) will respect this max-age
+        // setting. It give us some time to catch-up.
+        // This could also be done
+        // in the nginx proxy (if there is one), but we add this option
+        // in case an nginx proxy is not used.
+        const maxCacheSeconds = process.env.MAX_CACHE_SECONDS || 5;
+        res.setHeader('Cache-Control', `public, max-age=${maxCacheSeconds}`);
+        console.log(`Sent ${url} at path ${screenshotPath} with cache seconds=${maxCacheSeconds}`);
         res.sendFile(screenshotPath);
     }
     catch(e) {
@@ -87,6 +97,18 @@ app.get("/screenshot", async (req: Request, res: Response) => {
         res.sendStatus(500);
     }
 });
+
+function getETag(url: string) {
+    const date = new Date();
+    // we bucket time by 5 minutes to enforce an ETAG change
+    // every 5 minutes
+    const minuteBucket = Math.floor(date.getMinutes() / 5);
+    const dateComponent = dateFormat(new Date(), 'yyyy-dd-MM HH');
+    // we include the date with the minuteBucket to enforce change
+    // every day, every hour, every 5 minutes
+    const cacheKey = `${url}-${dateComponent} hourPart=${minuteBucket}`;
+    return Buffer.from(cacheKey).toString('base64');
+}
 
 /**
  * Start Express server.
