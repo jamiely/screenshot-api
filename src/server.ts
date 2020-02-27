@@ -3,6 +3,7 @@ import playwright from "playwright";
 import tempy from "tempy";
 import bluebird from "bluebird";
 import {format as dateFormat} from "date-fns";
+import queryString from 'query-string';
 
 const app = express();
 
@@ -10,6 +11,7 @@ app.set("port", process.env.PORT || 3000);
 
 app.use(express.urlencoded());
 app.use(express.json());
+app.use(express.static('public'));
 
 app.get("/-/health", (req: Request, res: Response) => {
     res.sendStatus(204);
@@ -23,12 +25,26 @@ app.post("/request", (req: Request, res: Response) => {
     });
 });
 
+app.get('/screenshotPage', (req: Request, res: Response) => {
+    res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+<img src="screenshot?${queryString.stringify(req.query)}">
+</body>
+</html>
+    `)
+});
+
 app.get("/screenshot", async (req: Request, res: Response) => {
     try {
         const browserType: string = req.query.browser || "chromium";
-        const viewportWidth = req.query.viewportWidth || 1280;
-        const viewportHeight = req.query.viewportHeight || 720;
-        const viewportScale = req.query.viewportScale || 2;
+        const viewportWidth = parseInt(req.query.viewportWidth) || 1280;
+        const viewportHeight = parseInt(req.query.viewportHeight) || 720;
+        const viewportScale = parseInt(req.query.viewportScale) || 2;
         const url = req.query.url || "https://example.com";
         let waitForContentRe = null;
         if(req.query.waitForContent) {
