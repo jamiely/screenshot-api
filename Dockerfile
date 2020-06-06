@@ -1,4 +1,4 @@
-FROM playwright-docker:latest AS builder
+FROM jamiely/playwright:latest AS builder
 
 RUN mkdir -p /build
 WORKDIR /build
@@ -10,7 +10,7 @@ RUN npm run build-ts
 RUN ls -al dist
 RUN ls -al .
 
-FROM playwright-docker:latest
+FROM jamiely/playwright:latest
 
 # First, setup Playwright dependencies
 
