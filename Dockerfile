@@ -1,4 +1,4 @@
-FROM jamiely/playwright:latest AS builder
+FROM jamiely/playwright:0.11.1 AS builder
 
 RUN mkdir -p /build
 WORKDIR /build
@@ -10,7 +10,7 @@ RUN npm run build-ts
 RUN ls -al dist
 RUN ls -al .
 
-FROM jamiely/playwright:latest
+FROM jamiely/playwright:0.11.1
 
 # First, setup Playwright dependencies
 
